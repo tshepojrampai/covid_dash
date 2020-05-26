@@ -1,340 +1,252 @@
-import flask
-from flask import Flask, render_template
+import requests
+from pandas.io.json import json_normalize
+import dash
+import dash_table
+import dash_core_components as dcc
+import dash_html_components as html
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
-import plotly as py
 import plotly.graph_objects as go
+from dash.dependencies import Input, Output
+from plotly.subplots import make_subplots
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+import plotly as py
+import plotly.graph_objs as go
+init_notebook_mode(connected=True)
 
-#------------------------Read in data ---------------------------
-#SA Cummulative
-df1 = pd.read_csv('data/external/global_data.csv')
-df1 = df1[df1.Country=='South Africa']
-df = pd.read_csv('data/external/SA_hourly_update.csv')
-
-#Provincial cummulative
-df_day=pd.read_csv('data/external/provincial_cumulative.csv')
-
-# Commulative death per province 
-
-df_death = pd.read_csv('data/external/provincial_death.csv')
-
-#Drop unwanted columns
-# Provincial cases dataset
-df_day = df_day.drop(['source','Unnamed: 0','YYYYMMDD'],axis = 1)
-
-#append dates with missing data with previous day data(bc commulative)
-df_day = df_day.fillna(method='ffill')
-
-df_death = df_death.drop(['source','Unnamed: 0','YYYYMMDD'],axis = 1)
-#append dates with missing data with previous day data(bc commulative)
-df_death = df_death.fillna(method='ffill')
-
-#Update for the most recent  hours: SA Cases
-# df.tail()
-
-
-
-fig0 = go.Figure(data=[
-    go.Bar( name='GP',x=df_day.index, y=df_day.GP),
-    go.Bar( name='WC',x=df_day.index, y=df_day.WC),
-    go.Bar( name='KZN',x=df_day.index, y=df_day.KZN),
-    go.Bar( name='EC',x=df_day.index, y=df_day.EC),
-    go.Bar( name='NW',x=df_day.index, y=df_day.NW),
-    go.Bar( name='NC',x=df_day.index, y=df_day.NC),
-    go.Bar( name='MP',x=df_day.index, y=df_day.MP),
-    go.Bar( name='LP',x=df_day.index, y=df_day.LP),
-    go.Bar( name='FS',x=df_day.index, y=df_day.FS),
-])
-fig0.update_layout(
-    updatemenus=[
-        dict(
-            active=0,
-            buttons=list([
-                dict(label="ALL",
-                     method="update",
-                     args=[{"visible": [True,True,True,True,True,True,True,True,True,]},
-                           {"title": "Cumulative Confirmed Cases of all Provinces",
-                            }]),
-                dict(label="GP",
-                     method="update",
-                     args=[{"visible":  [True, False, False,False, False, False,False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: Gauteng",
-                            }]),
-                dict(label="WC",
-                     method="update",
-                     args=[{"visible": [False,True,False,False,False,False,False,False,False]},
-                           {"title": "Cumulative Confirmed Cases: Western Cape",
-                          }]),
-                dict(label="KZN",
-                     method="update",
-                     args=[{"visible": [False,False,True,False,False,False,False,False,False]},
-                           {"title": "Cumulative Confirmed Cases: Kwa-Zulu Natal",
-                          }]),
-                dict(label="EC",
-                     method="update",
-                     args=[{"visible": [False,False,False,True,False,False,False,False,False]},
-                           {"title": "Cumulative Confirmed Cases: Eastern Cape",
-                          }]),
-                dict(label="NW",
-                     method="update",
-                     args=[{"visible": [False,False,False,False,True, False,False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: North West",
-                          }]),
-                dict(label="NC",
-                     method="update",
-                     args=[{"visible": [False,False,False,False,False,True,False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: Northern Cape",
-                          }]),
-                dict(label="MP",
-                     method="update",
-                     args=[{"visible": [ False,False,False,False, False,False, True, False, False]},
-                           {"title": "Cumulative Confirmed Cases: Mpumalanga",
-                          }]),
-                dict(label="LP",
-                     method="update",
-                     args=[{"visible": [ False,False,False,False, False,False,False,True,   False]},
-                           {"title": "Cumulative Confirmed Cases: Limpopo",
-                          }]),
-                 dict(label="FS",
-                     method="update",
-                     args=[{"visible": [ False,False,False,False, False,False,False, False,True]},
-                           {"title": "Cumulative Confirmed Cases: Free State",
-                          }]),
-            ]),
-        )
-    ])
-# Change the bar mode
-fig0.update_layout(barmode='stack',xaxis=dict(
-    rangeslider=dict(
-        visible = True)))
-fig0.update_layout(height=600, width=800, title_text="Confirmed Cases by provinces",
-                 xaxis_title="Days since the first confirmed case",
-                  yaxis_title="Linear")
-                            
-
-# Initialize figure
-fig1 = go.Figure()
-
-# Add Traces
-
-fig1.add_trace(
-    go.Scatter(
-        y=[2,312],
-        x=[2,10],
-        line=dict(color='grey',
-                  width=4, dash='dot'),
-        name = '1st Day'
-     
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=[2,59],
-        x=[3,60],
-        line=dict(color='grey',
-                  width=4, dash='dot'),
-        name = '2nd Day'
-     
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=[2,36],
-        x=[4,60],
-        line=dict(color='grey',
-                  width=4, dash='dot'),
-        name = '3rd Day'
-     
-    ))
-
-
-fig1.add_annotation(
-            x=10,
-            y=2.5,
-            text="Cases Doubles every day",
-          
-)
-fig1.add_annotation(
-            x=21,
-            y=.8,
-            text="Doubles every 2nd day",
-          
-)
-
-fig1.add_annotation(
-            x=40,
-            y=1.1,
-            text="3rd day",
-          
-)
-
-
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['EC'],
-        x=df_day.index,
-        name= 'EC'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['WC'],
-        x=df_day.index,
-        name= 'WC'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['FS'],
-        x=df_day.index,
-        name= 'FS'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['GP'],
-        x=df_day.index,
-        name= 'GP'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['KZN'],
-        x=df_day.index,
-        name= "KZN"
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['NW'],
-        x=df_day.index,
-        name= 'NW'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['LP'],
-        x=df_day.index,
-        name= 'LP'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['MP'],
-        x=df_day.index,
-        name= 'MP'
-    ))
-fig1.add_trace(
-    go.Scatter(
-        y=df_day['NC'],
-        x=df_day.index,
-        name= 'NC'
-    ))
-# fig1.add_trace(
-#     go.Scatter(
-#         y=df_day['UNKNOWN'],
-#         x=df_day.index,
-#         name='Unlocated'
-#     ))
-
-
-
-fig1.update_layout(
-    updatemenus=[
-        dict(
-            active=0,
-            buttons=list([
-                dict(label="ALL",
-                     method="update",
-                     args=[{"visible": [True,True,True,True,True,True,True,True,True,True,True,True,False,]},
-                           {"title": "Cumulative Confirmed Cases of all Provinces",
-                            }]),
-                dict(label="EC",
-                     method="update",
-                     args=[{"visible": [True,True,True,True, False, False, False,False, False, False,False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: Eastern Cape",
-                            }]),
-                dict(label="WC",
-                     method="update",
-                     args=[{"visible": [True,True,True,False,True,False,False,False,False,False,False,False,False]},
-                           {"title": "Cumulative Confirmed Cases: Western Cape",
-                          }]),
-                dict(label="FS",
-                     method="update",
-                     args=[{"visible": [True,True,True,False,False,True,False,False,False,False,False,False,False]},
-                           {"title": "Cumulative Confirmed Cases: Free State",
-                          }]),
-                dict(label="GP",
-                     method="update",
-                     args=[{"visible": [True,True,True,False,False,False,True,False,False,False,False,False,False]},
-                           {"title": "Cumulative Confirmed Cases: Gauteng",
-                          }]),
-                dict(label="KZN",
-                     method="update",
-                     args=[{"visible": [True,True,True,False,False,False,False,True, False,False,False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: Kwa Zulu Natal",
-                          }]),
-                dict(label="NW",
-                     method="update",
-                     args=[{"visible": [True,True,True,False,False,False,False,False,True,False,False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: North West",
-                          }]),
-                dict(label="LP",
-                     method="update",
-                     args=[{"visible": [True,True,True,False, False,False,False,False, False,True, False, False, False]},
-                           {"title": "Cumulative Confirmed Cases: Limpopo",
-                          }]),
-                dict(label="MP",
-                     method="update",
-                     args=[{"visible": [True,True,True,False, False,False,False,False, False,False,True,  False, False]},
-                           {"title": "Cumulative Confirmed Cases: Mpumalanga",
-                          }]),
-                dict(label="NC",
-                     method="update",
-                     args=[{"visible": [True,True,True,False, False,False,False,False, False,False,  False,True, False]},
-                           {"title": "Cumulative Confirmed Cases: Northern Cape",
-                          }]),
-                 dict(label="Cumulative Confirmed Cases: UNKWNOWN",
-                     method="update",
-                     args=[{"visible": [True,True,True,False, False,False,False,False, False,False,False, False,False]},
-                           {"title": "Unlocated",
-                          }]),
-            ]),
-        )
-    ])
-
-# Set title
-fig1.update_layout(title_text="Confirmed Cases by Province",
-                 xaxis_title="Days since the first confirmed case",
-                 yaxis_title="Log",
-                 yaxis_type="log")
-
+#----------- Table styling ------------------
+style_cell = {
+    'fontFamily': 'Open Sans',
+    'textAlign': 'center',
+    'height': '30px',
+    'padding': '10px 22px',
+    'whiteSpace': 'inherit',
+    'overflow': 'hidden',
+                'textOverflow': 'ellipsis',
+}
+style_cell_conditional = [
+    {
+        'if': {'column_id': 'State'},
+        'textAlign': 'left'
+    },
+]
+style_header = {
+    'fontWeight': 'bold',
+    'backgroundColor': "#3D9970",
+    'fontSize': '16px'
+}
+style_data_conditional = [
+    {
+        'if': {'row_index': 'odd'},
+        'backgroundColor': 'rgb(248, 248, 248)'
+    }]
+style_table = {
+    'maxHeight': '70ex',
+    'overflowY': 'scroll',
+    'width': '100%',
+    'minWidth': '100%',}
 #Display on dash and flask
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import flask
+#import plotly figures.py as mod 
+import figures as mod
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 server = flask.Flask(__name__)
-App = dash.Dash(__name__,server=server, 
+app = dash.Dash(__name__,server=server, 
                 external_stylesheets=external_stylesheets,
-                url_base_pathname='/cum_province/')
+                url_base_pathname='/provincial_covid19-analysis/')
 
 
-App.layout = html.Div(children=[
+#Style sheet
+
+app.config['suppress_callback_exceptions'] = True
+app.layout = html.Div(children=[
+        #header
     
-    html.Div(children='Comulative data by province.'
-    ),
+    html.Div([
+        html.Div([
+           
+        ], className="four columns"),
+        
 
-    dcc.Graph(
-        id='linear_bar',
-        figure=fig0
-    ),
-    dcc.Graph(
-        id='log_commulative',
-        figure=fig1
-    )
+        html.Div([
+            html.H3('Latest Covid 19 Update', style={
+                                'fontFamily': 'Open Sans',
+                                'textAlign': 'center',
+                            }),
+             
+        ], className="four columns"),
+        
+        html.Div([
+            html.H3('#StayAtHome', style={
+                                'fontFamily': 'Open Sans',
+                                'textAlign': 'right',
+                            }),
+            
+            
+        ], className="four columns")
+    ], className="row"),
+    
+    dcc.Tabs(id='tabs-global', value='tab', children=[
+        dcc.Tab(label='Global Map', value='tab-1'),
+        dcc.Tab(label='South African cases', value='tab-2'),
+        dcc.Tab(label='African cases', value='tab-3'),
+    ]),
+    html.Div(id='tabs-global-content')
 ])
 
-# app = Flask(__name__)
 
-# @app.route('/')
+#----------- Main tab call back ----
+@app.callback(Output('tabs-global-content', 'children'),
+              [Input('tabs-global', 'value')])
+def render_content(tab):
 
-# def index():
-#     return render_template('index.html')
+    if tab == 'tab-1':
+        return html.Div([
+            html.Div([
 
+                # VISUALISATIONS
+
+                html.Div([
+                      dcc.Graph(
+                          id='tot_cases',
+                            figure=go.Figure(mod.fig_ind)
+                          
+                        ),
+                html.Div([
+                    dash_table.DataTable(
+                            id='country_cases',
+                            data=mod.df_tot_cases.to_dict("rows"),
+                            columns=[{"name": i, "id": i}
+                                     for i in mod.df_tot_cases.columns],
+                            style_table=style_table,
+                            style_cell=style_cell,
+                            style_data_conditional=style_data_conditional,
+                            style_header=style_header,
+                            style_cell_conditional=style_cell_conditional,
+                            filter_action="native"
+                        )
+                ])          
+            ], className="row"),
+
+                ], className="three columns"),
+            
+            html.Div([
+                    dcc.Graph(
+                          id='sa_cases',
+                            figure=go.Figure(mod.fig2)
+                        ),
+                    html.Div([
+                        dcc.Tabs(id='tabs-globals', value='tabs', children=[
+                            dcc.Tab(label='Total Cases', value='tab-1.'),
+                            dcc.Tab(label='Active Cases', value='tab-2.'),
+                            dcc.Tab(label='Solved Cases', value='tab-3.'),
+                            dcc.Tab(label='Recovery Rate', value='tab-4.'),
+                            dcc.Tab(label='Case Fatality Rate', value='tab-5.')
+                        ], colors={
+                                "border": "white",
+                                "primary": "gold",
+                                "background": "cornsilk"
+                            }),
+                     html.Div(id='tabs-globals-contents'),
+            ], className="row"),
+                ], className="six columns"),
+
+                html.Div([
+                     dcc.Graph(
+                          id='indicator_tot_death',
+                            figure=go.Figure(mod.fig3)
+                        ),
+
+
+                    html.Div([
+                        dcc.Graph(
+                          id='sa_active',
+                            figure=go.Figure(mod.fig_line)
+                        ),
+                            
+                       
+            ], className="row")
+
+                ], className="three columns"),
+            ], className="row")
+
+            # fOOTER
+        html.Div([
+                html.Div([
+                    html.H3('Footer'),
+
+                ], className="six columns"),
+
+                html.Div([
+                    html.H3('Footer'),
+
+                ], className="six columns"),
+            ], className="row")
+  
+
+    elif tab == 'tab-2':
+        return html.Div([
+            
+            dcc.Graph(
+                id='figure',
+                figure=go.Figure(mod.fig_prov_stacked)
+            ),html.Div([
+                dcc.Graph(
+                    id='figure',
+                    figure=go.Figure(mod.fig_prov_log)
+                ),html.Div([
+                dcc.Graph(
+                    id='figure',
+                    figure=go.Figure(mod.fig_flat)
+                ),            
+            ], className="row"),
+                ], className="twelve columns")])
+    else:
+        return html.H1('African cases!!!')
+    
+#---- Small tab call back -----
+
+@app.callback(Output('tabs-globals-contents', 'children'),
+              [Input('tabs-globals', 'value')])
+def render_content(tabs):
+    
+    if tabs == 'tab-1.':
+        return dcc.Graph(
+            id='figure',
+            figure=
+              go.Figure(mod.fig)
+            )
+    elif tabs == 'tab-2.':   
+        return dcc.Graph(
+
+            id='figure',
+            figure=
+              go.Figure(mod.fig1_)
+            )     
+    elif tabs == 'tab-3.':   
+        return dcc.Graph(
+            id='figure',
+            figure=
+              go.Figure(mod.fig2_)
+            )
+    elif tabs == 'tab-4.':
+         return dcc.Graph(
+             id='figure',
+             figure=go.Figure(mod.fig3_)
+            )
+    else:
+        return dcc.Graph(
+            id='figure',
+            figure=
+              go.Figure(mod.fig4_)
+            )
+    
 if __name__ == '__main__':
-    App.run_server(debug=True)
+    app.run_server(debug=True)
+    
