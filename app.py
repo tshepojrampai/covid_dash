@@ -4,6 +4,8 @@ import dash
 import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
+import os
+from random import randint
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -63,7 +65,7 @@ app = dash.Dash(__name__,server=server,
 
 
 #Style sheet
-
+server.secret_key = os.environ.get('secret_key', str(randint(0, 1000000)))
 app.config['suppress_callback_exceptions'] = True
 app.layout = html.Div(children=[
         #header
@@ -248,5 +250,5 @@ def render_content(tabs):
             )
     
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, threaded=True)
     
