@@ -12,7 +12,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from dash.dependencies import Input, Output
+from dash.dependencies import Inptut, Output
 from plotly.subplots import make_subplots
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import plotly as py
@@ -59,13 +59,12 @@ import flask
 import figures as mod
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-server = flask.Flask(__name__)
-server.secret_key = os.environ.get('secret_key', str(randint(0, 1000000)))
-app = dash.Dash(__name__,server=server, 
-                external_stylesheets=external_stylesheets)
 
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 #Style sheet
-server.secret_key = os.environ.get('secret_key', str(randint(0, 1000000)))
+
 app.config['suppress_callback_exceptions'] = True
 app.layout = html.Div(children=[
         #header
@@ -250,5 +249,5 @@ def render_content(tabs):
             )
     
 if __name__ == '__main__':
-    app.run_server(debug=True, threaded=True)
+    app.run_server()
     
