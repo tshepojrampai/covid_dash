@@ -1,4 +1,5 @@
 import requests
+from random import randint
 from pandas.io.json import json_normalize
 import dash
 import dash_table
@@ -59,10 +60,9 @@ import figures as mod
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 server = flask.Flask(__name__)
+server.secret_key = os.environ.get('secret_key', str(randint(0, 1000000)))
 app = dash.Dash(__name__,server=server, 
-                external_stylesheets=external_stylesheets,
-                url_base_pathname='/provincial_covid19-analysis/')
-
+                external_stylesheets=external_stylesheets)
 
 #Style sheet
 server.secret_key = os.environ.get('secret_key', str(randint(0, 1000000)))
