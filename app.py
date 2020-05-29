@@ -2,7 +2,7 @@ import requests
 from random import randint
 from pandas.io.json import json_normalize
 import dash
-import dash_table
+import dash_table_experiments as dt
 import dash_core_components as dcc
 import dash_html_components as html
 import os
