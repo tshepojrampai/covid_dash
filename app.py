@@ -12,7 +12,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from dash.dependencies import Inptut, Output
+from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import plotly as py
