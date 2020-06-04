@@ -54,7 +54,6 @@ import dash_core_components as dcc
 import dash_html_components as html
 import flask
 #import plotly figures.py as mod 
-import dash_table
 import figures as mod
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -119,18 +118,18 @@ def render_content(tab):
                           
                         ),
                 html.Div([
-                    dash_table.DataTable(
-                            id='country_cases',
-                            data=mod.df_tot_cases.to_dict("rows"),
-                            columns=[{"name": i, "id": i}
-                                     for i in mod.df_tot_cases.columns],
-                            style_table=style_table,
-                            style_cell=style_cell,
-                            style_data_conditional=style_data_conditional,
-                            style_header=style_header,
-                            style_cell_conditional=style_cell_conditional,
-                            filter_action="native"
-                        )
+#                     dash_table_component.DataTable(
+#                             id='country_cases',
+#                             data=mod.df_tot_cases.to_dict("rows"),
+#                             columns=[{"name": i, "id": i}
+#                                      for i in mod.df_tot_cases.columns],
+#                             style_table=style_table,
+#                             style_cell=style_cell,
+#                             style_data_conditional=style_data_conditional,
+#                             style_header=style_header,
+#                             style_cell_conditional=style_cell_conditional,
+#                             filter_action="native"
+#                         )
                 ])          
             ], className="row"),
 
