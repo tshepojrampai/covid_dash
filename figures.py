@@ -13,7 +13,7 @@ from plotly.subplots import make_subplots
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot
 import plotly as py
 import plotly.graph_objs as go
-init_notebook_mode(connected=True)
+
 
 #----------- Table styling ------------------
 style_cell = {
