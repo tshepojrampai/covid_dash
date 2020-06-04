@@ -13,11 +13,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
-from plotly.subplots import make_subplots
-from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import plotly as py
 import plotly.graph_objs as go
-init_notebook_mode(connected=True)
+
 
 #----------- Table styling ------------------
 style_cell = {
@@ -56,6 +54,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import flask
 #import plotly figures.py as mod 
+import dash_table
 import figures as mod
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -251,3 +250,4 @@ def render_content(tabs):
 if __name__ == '__main__':
     app.run_server()
     
+
