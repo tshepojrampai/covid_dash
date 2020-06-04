@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
-from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+from plotly.offline import download_plotlyjs, plot
 import plotly as py
 import plotly.graph_objs as go
 init_notebook_mode(connected=True)
